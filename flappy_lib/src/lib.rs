@@ -14,7 +14,7 @@ use tracing::{debug, error, info, trace};
 
 #[async_trait]
 pub trait FlappyConsumer {
-    async fn handle_message(&mut self, message: String, sender: mpsc::Sender<String>);
+    async fn handle_message(&mut self, message: String) -> String;
 }
 
 #[derive(Default)]
@@ -36,9 +36,11 @@ impl FlappyBot {
                 #[cfg(feature = "enable-tracing")]
                 debug!("Received message for handling: {message}");
 
-                consumer
-                    .handle_message(message, message_sender.clone())
-                    .await;
+                let response = consumer.handle_message(message).await;
+
+                if let Err(error) = message_sender.send(response).await {
+                    tracing::error!("{error}");
+                };
             }
         });
 

@@ -34,15 +34,12 @@ struct MyFlappyConsumer;
 
 #[async_trait]
 impl FlappyConsumer for MyFlappyConsumer {
-    async fn handle_message(&mut self, message: String, sender: mpsc::Sender<String>) {
-        let data = message;  // Handle or modify the incoming message here
+    async fn handle_message(&mut self, message: String) -> String {
+        // Handle or modify the incoming message here
+        
+        tracing::debug!("{message:?}"); // Debug output for visibility
 
-        tracing::debug!("{data:?}");  // Debug output for visibility
-
-        // Send the message back out to the server
-        if let Err(error) = sender.send(data).await {
-            tracing::error!("{error}");
-        }
+        message // return a message back out to the server
     }
 }
 
@@ -56,9 +53,7 @@ async fn main() {
 
     let url = "wss://echo.websocket.org".to_owned();
 
-    let consumer = MyFlappyConsumer;
-
-    if let Err(error) = FlappyBot.start(url, consumer).await {
+    if let Err(error) = FlappyBot.start(url, MyFlappyConsumer).await {
         tracing::error!("{error}");
     };
 }
