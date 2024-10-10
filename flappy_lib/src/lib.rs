@@ -10,7 +10,7 @@ use tokio::{join, net::TcpStream, sync::mpsc};
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 #[cfg(feature = "enable-tracing")]
-use tracing::{debug, error, info, trace};
+use tracing::{error, info, trace};
 
 #[async_trait]
 pub trait FlappyConsumer {
@@ -21,7 +21,7 @@ pub trait FlappyConsumer {
 pub struct FlappyBot;
 
 impl FlappyBot {
-    pub async fn start<F>(&self, url: String, mut consumer: F) -> BotResult<()>
+    pub async fn start<F>(&self, url: &str, mut consumer: F) -> BotResult<()>
     where
         F: FlappyConsumer + Send + 'static,
     {
@@ -34,7 +34,7 @@ impl FlappyBot {
         tokio::spawn(async move {
             while let Some(message) = consumer_receiver.recv().await {
                 #[cfg(feature = "enable-tracing")]
-                debug!("Received message for handling: {message}");
+                trace!("Received message for handling: {message}");
 
                 let response = consumer.handle_message(message).await;
 
@@ -45,7 +45,7 @@ impl FlappyBot {
         });
 
         let socket_handler = SocketHandler::new(consumer_sender, message_receiver);
-        if let Err(error) = start_socket(&url, socket_handler).await {
+        if let Err(error) = start_socket(url, socket_handler).await {
             #[cfg(feature = "enable-tracing")]
             error!("Failed to start socket: {error}");
         }
@@ -91,7 +91,7 @@ async fn read_from_socket(
         match message {
             Message::Text(message) => {
                 #[cfg(feature = "enable-tracing")]
-                debug!("Received text message: {}", message);
+                trace!("Received text message: {}", message);
 
                 if let Err(error) = sender.send(message).await {
                     #[cfg(feature = "enable-tracing")]
@@ -116,7 +116,7 @@ async fn write_to_socket(
 ) {
     while let Some(message) = receiver.recv().await {
         #[cfg(feature = "enable-tracing")]
-        debug!("Sending message to WebSocket: {}", message);
+        trace!("Sending message to WebSocket: {}", message);
 
         if let Err(error) = write.send(Message::Text(message)).await {
             #[cfg(feature = "enable-tracing")]

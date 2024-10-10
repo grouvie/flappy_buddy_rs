@@ -25,7 +25,7 @@ async fn main() {
 
     subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    let url = "wss://echo.websocket.org".to_owned();
+    let url = "wss://echo.websocket.org";
 
     if let Err(error) = FlappyBot.start(url, MyFlappyConsumer).await {
         tracing::error!("{error}");
