@@ -12,7 +12,7 @@ pub enum BotError {
     #[error(transparent)]
     Join(#[from] task::JoinError),
 }
-//tokio_tungstenite::tungstenite::Error
+
 impl fmt::Display for BotError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

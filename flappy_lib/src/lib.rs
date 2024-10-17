@@ -39,7 +39,7 @@ impl FlappyBot {
                 let response = consumer.handle_message(message).await;
 
                 if let Err(error) = message_sender.send(response).await {
-                    tracing::error!("{error}");
+                    error!("{error}");
                 };
             }
         });
